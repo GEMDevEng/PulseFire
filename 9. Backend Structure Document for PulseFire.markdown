@@ -1,0 +1,207 @@
+# Backend Structure Document for *PulseFire*
+
+## Key Points
+- *PulseFire* uses a simple multiplayer setup where one player hosts the game.
+- The game relies on Unreal Engine’s built-in networking for smooth play.
+- It handles player actions, game rules, and data like health and scores.
+- The system is designed for small groups but can grow later.
+
+## Overview
+*PulseFire* is a first-person shooter (FPS) prototype built with Unreal Engine, focusing on controller-based gameplay for 2-4 players. Its backend, or the system managing multiplayer interactions, uses a setup where one player’s computer acts as both a player and the game’s host. This keeps things simple and budget-friendly while ensuring actions like shooting and moving feel fair and responsive.
+
+### How It Works
+When you start a game, one player hosts, creating a “listen server” that runs the game world. Other players join by entering the host’s IP address. The host’s computer decides what happens—like who gets hit or when the match ends—and shares this with everyone playing. This setup uses Unreal Engine’s tools to make sure everyone sees the same game.
+
+### Main Components
+- **Host (Listen Server)**: Manages the game, tracks scores, and ensures rules are followed.
+- **Players (Clients)**: Send actions like moving or shooting to the host, which updates the game.
+- **Data Sharing**: The system syncs player positions, health, and more so everyone’s game matches.
+
+### Future Potential
+Right now, *PulseFire* is built for small, local games, but it’s designed to potentially handle more players or even separate game servers if the project grows.
+
+---
+
+# Detailed Analysis of *PulseFire* Backend Structure Creation
+
+## Introduction
+This document provides a comprehensive analysis of the backend structure for *PulseFire*, a first-person shooter (FPS) prototype developed using Unreal Engine. The backend structure focuses on the multiplayer networking system, leveraging Unreal Engine’s Server-Client architecture with a listen server to support 2-4 players over a local area network (LAN). This analysis draws from the Product Description, Target Audience, Product Requirements Document (PRD), Software Requirements Specification (SRS), and App Flow documents to ensure alignment with the project’s goals of delivering a responsive, controller-based multiplayer experience within a $1,000 budget. The document details the architecture, key components, data model, input handling, session management, security, performance, and scalability considerations, providing a clear roadmap for developers.
+
+## Context and Purpose
+The *PulseFire* prototype aims to combine tactical gameplay inspired by *Tom Clancy’s Rainbow Six Vegas* with the fast-paced action of *Call of Duty*, targeting FPS gamers aged 18-34 who prefer controller input, as well as investors evaluating its funding potential. The backend structure is critical to enabling multiplayer functionality, ensuring that player actions are synchronized, game rules are enforced, and the experience feels seamless. Given the prototype’s scope, the backend relies on Unreal Engine’s built-in networking features, specifically a listen server model, to minimize complexity and cost while meeting functional requirements.
+
+The term “backend” in game development, particularly for Unreal Engine projects, refers to the server-side logic and networking infrastructure that manages game state and player interactions. Unlike web applications with distinct backend services (e.g., databases, APIs), *PulseFire*’s backend is integrated within the game engine, with one player’s instance acting as the server. This document clarifies how this setup is implemented, addressing the needs of both technical developers and stakeholders.
+
+## Overall Architecture
+*PulseFire* employs a listen server architecture, a common approach for small-scale multiplayer games. In this model, one player hosts the game, running both the server and client logic on their machine, while other players connect as clients. The server is authoritative, meaning it validates all actions (e.g., shooting, movement) and maintains the official game state, ensuring fairness and consistency. Clients send inputs to the server and receive updates to render the game world. This architecture, supported by Unreal Engine’s networking system, is ideal for the prototype’s 2-4 player LAN setup, as it eliminates the need for dedicated servers, aligning with the budget constraint.
+
+The architecture leverages Unreal Engine’s replication system to synchronize data, such as player positions and health, across all clients. Remote Procedure Calls (RPCs) handle specific actions, like firing a weapon, ensuring they are executed correctly across the network. This setup supports the prototype’s goal of delivering a responsive multiplayer experience while keeping development straightforward.
+
+## Key Components
+
+### Listen Server
+The listen server is the core of *PulseFire*’s backend, created when a player selects “Host Game” from the multiplayer menu. It performs the following functions:
+- **Game State Management**: Tracks global data, such as match time and team scores, and per-player data, like health and ammo.
+- **Input Validation**: Verifies client inputs (e.g., movement speed, firing rate) to prevent cheating.
+- **Replication**: Sends updated game state to all clients, ensuring a consistent experience.
+- **Logic Execution**: Handles authoritative actions, such as hit detection and respawning.
+
+**Implementation**: The listen server is instantiated using Unreal Engine’s session management, likely via the “Create Session” blueprint node with the listen server option enabled. The host’s IP address is displayed for others to join, simplifying LAN connectivity.
+
+### Clients
+Clients are the game instances running on non-host players’ machines. Their roles include:
+- **Input Capture**: Process controller inputs (e.g., analog stick for movement, trigger for shooting).
+- **Input Transmission**: Send inputs to the server for validation and processing.
+- **State Rendering**: Receive and display game state updates from the server, such as player positions or damage effects.
+- **Local Prediction**: Predict movement and actions locally to reduce perceived latency, with server corrections applied as needed.
+
+**Implementation**: Clients connect to the listen server by entering the host’s IP address, using Unreal Engine’s networking layer to establish and maintain the connection.
+
+### Replication
+Replication ensures that all players see a consistent game world. Key aspects include:
+- **Replicated Properties**: Data like player health, position, rotation, ammo, and weapon states are marked for replication, updating automatically across clients.
+- **Remote Procedure Calls (RPCs)**: Used for actions requiring server validation, such as shooting or reloading. For example, a client sends a “shoot” RPC, and the server performs raycast-based hit detection, replicating the result.
+- **Replication Frequency**: Configured to balance performance and accuracy, prioritizing critical data like position and health.
+
+**Implementation**: Unreal Engine’s Actor replication system is used, with properties set to replicate via blueprints or C++. RPCs are defined for specific actions, ensuring server authority.
+
+### GameMode and GameState
+- **GameMode**:
+  - Defines match rules, such as a 5-minute duration or a 50-point score limit.
+  - Configures spawn points, respawn timers (5 seconds), and win conditions.
+  - Exists only on the server, controlling game logic.
+- **GameState**:
+  - Stores global data, including match time, team scores (TeamAScore, TeamBScore), and game status.
+  - Replicated to all clients for real-time updates.
+
+**Implementation**: These are standard Unreal Engine classes extended for *PulseFire*. GameMode is configured via blueprints, while GameState properties are set to replicate automatically.
+
+### PlayerState
+- **Role**: Tracks per-player data, such as PlayerName, Team, Kills, and Deaths, persisting across respawns.
+- **Replication**: Automatically replicated to all clients, ensuring everyone sees accurate player stats.
+
+**Implementation**: PlayerState is a built-in Unreal Engine class, customized with additional properties as needed.
+
+## Data Model
+The backend manages several entities critical to multiplayer functionality, as outlined in the PRD’s Data Model section. The table below summarizes these entities and their attributes:
+
+| **Entity**         | **Attributes**                                                                 | **Replication** |
+|--------------------|-------------------------------------------------------------------------------|-----------------|
+| **PlayerCharacter**| Health (float), MaxHealth (float), CurrentWeapon (Weapon), Ammo (int), Position (Vector), Rotation (Rotator) | Yes             |
+| **Weapon**         | Damage (float), FireRate (float), MagazineSize (int), CurrentAmmo (int)       | Partial         |
+| **GameState**      | MatchTime (float), TeamAScore (int), TeamBScore (int)                         | Yes             |
+| **PlayerState**    | PlayerName (string), Team (int), Kills (int), Deaths (int)                    | Yes             |
+
+- **PlayerCharacter**: Represents the player’s in-game avatar. Most attributes are replicated to ensure all clients see the same state. Position and Rotation are updated frequently for smooth movement.
+- **Weapon**: May be a component of PlayerCharacter or a separate actor. Attributes like CurrentAmmo are replicated if the weapon is network-relevant.
+- **GameState**: Tracks global match data, fully replicated to keep clients synchronized.
+- **PlayerState**: Stores player-specific stats, replicated to display accurate scores and statuses.
+
+**Relationships**:
+- PlayerCharacter owns one CurrentWeapon.
+- GameState aggregates PlayerStates for all players.
+- The map contains multiple PlayerCharacters and static assets, managed by the server.
+
+## Input Handling
+Controller inputs are central to *PulseFire*’s gameplay, and their handling in a multiplayer context is a key backend function:
+- **Client-Side**:
+  - Inputs are captured using Unreal Engine’s input system, mapped to Xbox-style controllers (e.g., left analog stick for movement, right trigger for shooting).
+  - Local prediction is applied for movement and some actions to ensure responsiveness, especially for analog inputs.
+- **Server-Side**:
+  - Clients send inputs to the server via Unreal Engine’s networking layer.
+  - The server validates inputs (e.g., ensuring firing rate matches weapon properties) and executes actions.
+  - For shooting, a client sends a “shoot” RPC, triggering server-side raycast hit detection. Results (e.g., damage, hit markers) are replicated back.
+- **Example Flow**:
+  - Player presses the right trigger.
+  - Client predicts the shot locally for immediate feedback (e.g., muzzle flash).
+  - Client sends a “shoot” RPC to the server.
+  - Server validates ammo and performs hit detection, applying damage if a target is hit.
+  - Server replicates damage and hit effects to all clients.
+
+This approach ensures controller inputs feel responsive while maintaining server authority, critical for fairness in multiplayer.
+
+## Session Management
+Session management governs how players start and join games:
+- **Hosting**:
+  - Selecting “Host Game” creates a listen server session.
+  - The system displays the host’s IP address for others to join.
+  - The host can view connected players and start the match when ready.
+- **Joining**:
+  - Selecting “Join Game” prompts the player to enter the host’s IP address.
+  - Upon successful connection, the player joins the session and awaits match start.
+  - Invalid IPs trigger an error message (e.g., “Failed to connect”).
+- **Match Start**:
+  - The host initiates the match, spawning all players at designated points on the map.
+- **Implementation**:
+  - Unreal Engine’s session management handles session creation and connection, using direct IP for LAN play. Blueprints likely implement the “Create Session” and “Join Session” nodes, configured for listen server mode.
+
+## Security
+Security measures protect the integrity of multiplayer gameplay:
+- **Server Authority**: Critical logic, including hit detection, movement validation, and respawning, is server-side to prevent cheating.
+- **Input Validation**: The server checks inputs against game rules (e.g., movement speed limits, ammo availability).
+- **Encryption**: Unreal Engine’s built-in networking encryption secures data transmission, protecting against interception.
+- **Implementation**: These features are standard in Unreal Engine’s networking system, requiring minimal custom configuration for the prototype.
+
+## Performance and Responsiveness
+The backend is designed to meet performance requirements outlined in the SRS:
+- **Frame Rate**: The game targets 60 FPS on mid-range hardware (e.g., RTX 3060 equivalent), with the server optimized to handle game logic efficiently.
+- **Input Latency**: Input processing achieves <50ms latency from controller input to on-screen action, aided by local prediction.
+- **Network Latency**: LAN connections target <100ms latency, typically much lower in practice.
+- **Implementation**: Local prediction and client-side rendering reduce perceived latency, while server-side optimizations ensure stable performance.
+
+## Scalability Considerations
+The current backend supports 2-4 players on a small map using a listen server, suitable for the prototype’s scope. For future expansion:
+- **Dedicated Servers**: Transitioning to dedicated servers would support 8+ players, offloading server logic from player machines.
+- **Larger Maps**: Level streaming and optimized replication can handle bigger environments.
+- **Matchmaking**: External services could be added for player matching in a full game.
+- **Implementation**: The current structure uses Unreal Engine’s flexible networking, allowing future upgrades with minimal refactoring.
+
+## Integration with Frontend
+While *PulseFire*’s backend and frontend are tightly integrated within Unreal Engine, the backend provides the authoritative game state that the frontend (client-side rendering, UI) consumes:
+- **HUD Updates**: The backend replicates health, ammo, and timer data, which the frontend displays via UMG widgets.
+- **Menu Navigation**: Session management (host/join) is backend-driven, with the frontend rendering menu screens.
+- **Gameplay Feedback**: Actions like hit markers or respawns are triggered by backend logic and visualized client-side.
+
+This integration ensures a seamless experience, with the backend handling logic and the frontend focusing on presentation.
+
+## Development Considerations
+The backend is implemented using a combination of Unreal Engine blueprints and C++:
+- **Blueprints**: Used for rapid prototyping of session management, input handling, and basic replication logic.
+- **C++**: Employed for performance-critical systems, such as hit detection and movement validation, to meet the 60 FPS target.
+- **Asset Reuse**: The backend may leverage the client’s existing Unreal Engine 5.4 build or marketplace templates to reduce development time, aligning with the $1,000 budget.
+
+## Comparison to Industry Practices
+Compared to other Unreal Engine multiplayer games, *PulseFire*’s backend is minimalist, focusing on core functionality for a prototype. For example:
+- **Fortnite** uses dedicated servers and Epic’s Online Services for matchmaking, far beyond *PulseFire*’s scope.
+- **Small-Scale Indies** often use listen servers for prototypes, similar to *PulseFire*, as seen in tutorials like the [Multiplayer Programming Quick Start](https://dev.epicgames.com/documentation/en-us/unreal-engine/multiplayer-programming-quick-start-for-unreal-engine).
+*PulseFire*’s approach balances simplicity with robustness, leveraging Unreal Engine’s strengths for rapid development.
+
+| **Aspect**                  | **PulseFire Backend**                     | **Industry Standard (Indie)**             |
+|-----------------------------|-------------------------------------------|-------------------------------------------|
+| **Server Type**             | Listen server                            | Listen or dedicated server                |
+| **Player Count**            | 2-4                                      | 2-16                                      |
+| **Networking**              | Unreal Engine replication, RPCs           | Similar, plus custom services             |
+| **Scalability**             | Limited, future-ready                    | Varies, often more robust                 |
+
+## Challenges and Mitigations
+- **Challenge**: Limited budget may restrict optimization or testing depth.
+  - **Mitigation**: Use Unreal Engine’s built-in tools and free assets to streamline development.
+- **Challenge**: Listen server reliance on host’s hardware could affect performance.
+  - **Mitigation**: Optimize server logic and test on target hardware (RTX 3060 equivalent).
+- **Challenge**: Ensuring responsive controller input over LAN.
+  - **Mitigation**: Implement local prediction and validate with playtests.
+
+## Conclusion
+The backend structure of *PulseFire* is a lean, effective implementation of Unreal Engine’s Server-Client architecture, tailored for a small-scale FPS prototype. By using a listen server, the system supports 2-4 players with responsive, controller-based gameplay while staying within budget. The structure handles game state, input validation, and replication efficiently, meeting the needs of FPS gamers and setting the stage for potential expansion. Developers can rely on this document to guide implementation, ensuring a polished prototype that attracts funding for a full game.
+
+## Key Citations
+- [Multiplayer Network Compendium by Cedric Neukirchen](https://cedric-neukirchen.net/docs/category/multiplayer-network-compendium/)
+- [Networking and Multiplayer in Unreal Engine](https://dev.epicgames.com/documentation/en-us/unreal-engine/networking-and-multiplayer-in-unreal-engine)
+- [Multiplayer in Blueprints](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/Blueprints/)
+- [Multiplayer Programming Quick Start for Unreal Engine](https://dev.epicgames.com/documentation/en-us/unreal-engine/multiplayer-programming-quick-start-for-unreal-engine)
+- [Multiplayer Programming Quick Start](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/QuickStart/)
+- [Networking and Multiplayer Overview](https://docs.unrealengine.com/en-US/Gameplay/Networking/index.html)
+- [How to Make a Multiplayer Game in Unreal Engine](https://game-ace.com/blog/multiplayer-game-in-unreal/)
+- [Networking and Multiplayer in Unreal Engine 4.27](https://docs.unrealengine.com/4.27/en-US/InteractiveExperiences/Networking/)
+- [Networking and Multiplayer in Unreal Engine 5.0](https://docs.unrealengine.com/5.0/en-US/networking-and-multiplayer-in-unreal-engine/)
+- [Reddit Discussion on Simple Multiplayer Architecture](https://www.reddit.com/r/unrealengine/comments/118j5eq/simple_multiplayer_architecture_with_steam/)

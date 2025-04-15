@@ -1,0 +1,159 @@
+# Tech Stack Document for *PulseFire*
+
+## Key Points
+- *PulseFire* uses Unreal Engine 5.4 for its game development framework.
+- It seems likely that C++ and Blueprints handle coding needs.
+- The game likely relies on Unreal’s built-in networking for multiplayer.
+- Tools like Git and Trello support development and collaboration.
+
+## Overview
+*PulseFire* is a first-person shooter (FPS) prototype designed to deliver exciting multiplayer action with smooth controller-based gameplay. To make this happen, the game uses a carefully chosen set of tools and technologies that balance power and simplicity, ensuring the team can create a fun demo within a tight budget.
+
+## Core Technologies
+The heart of *PulseFire* is Unreal Engine 5.4, a popular tool for building games with great graphics and multiplayer features. The game likely uses C++ for fast, complex code and Blueprints, a visual system, for quick design tweaks. Together, these let the team build everything from shooting mechanics to menus efficiently.
+
+## Supporting Tools
+To keep the project organized, tools like Git help track changes to code and assets, while Trello or Jira manage tasks. For visuals and sound, the team might use existing assets or free tools like Blender for 3D models or Audacity for audio, keeping costs low.
+
+## Deployment
+When *PulseFire* is ready to test, Unreal Engine’s built-in tools package it as a Windows program, making it easy to share with players or investors for feedback.
+
+---
+
+# Detailed Analysis of *PulseFire* Tech Stack Creation
+
+## Introduction
+This document outlines the technology stack for *PulseFire*, a first-person shooter (FPS) prototype developed using Unreal Engine, as requested for a comprehensive Tech Stack document. *PulseFire* combines tactical gameplay inspired by *Tom Clancy’s Rainbow Six Vegas* with the fast-paced action of *Call of Duty*, targeting gamers aged 18-34 who prefer controller-based gameplay and investors evaluating its funding potential. The tech stack is designed to support a multiplayer prototype with a small map, delivered within a $1,000 budget, as detailed in the Product Description, Target Audience, Product Requirements Document (PRD), Software Requirements Specification (SRS), App Flow, and Backend Structure documents. This analysis provides a detailed breakdown of the technologies, tools, and frameworks used, ensuring developers have a clear roadmap for implementation while addressing the project’s constraints and goals.
+
+## Context and Purpose
+The tech stack for *PulseFire* encompasses the game engine, programming languages, networking solutions, development tools, asset creation pipelines, audio systems, and deployment mechanisms required to build a functional multiplayer FPS prototype. The stack is tailored to meet the project’s requirements, including responsive controller mechanics, a 2-4 player LAN multiplayer setup, and a minimal user interface, all while adhering to budget limitations. By leveraging Unreal Engine’s robust features and potentially reusing existing assets, the stack ensures efficient development without compromising quality. The document serves as a reference for developers, clarifying the technologies used and their roles in achieving the prototype’s objectives.
+
+## Methodology
+The tech stack was determined by analyzing the project’s requirements and constraints, drawing from the provided documents. The Product Description highlights Unreal Engine 5.4 as the core platform, emphasizing controller-based gameplay and multiplayer functionality. The Target Audience underscores the need for accessibility and responsiveness, influencing choices like controller input systems. The PRD and SRS detail technical specifications, such as 60 FPS performance and LAN networking, guiding the selection of programming languages and tools. The App Flow and Backend Structure documents confirm the use of Unreal’s networking and session management, eliminating the need for external services. Industry practices for Unreal Engine multiplayer FPS games, as seen in resources like [Game-Ace’s multiplayer guide](https://game-ace.com/blog/multiplayer-game-in-unreal/), informed additional tool selections, such as asset creation and version control systems.
+
+## Tech Stack Components
+
+### Game Engine
+- **Unreal Engine 5.4**
+  - **Role**: Serves as the primary development platform, providing rendering (DirectX 12), physics, animation, audio, and networking capabilities.
+  - **Rationale**: Chosen for its advanced features, including improved graphics and built-in multiplayer support, as specified in the SRS. Its flexibility allows the use of existing assets or templates, aligning with the $1,000 budget.
+  - **Features Used**:
+    - CharacterMovementComponent for player movement.
+    - Unreal Motion Graphics (UMG) for menus and HUD.
+    - Level editor for map design.
+    - Networking system for LAN multiplayer.
+
+### Programming Languages
+- **C++**
+  - **Role**: Handles performance-critical code, such as hit detection, movement validation, and networking logic.
+  - **Rationale**: Essential for optimizing gameplay to meet the 60 FPS target on mid-range hardware (e.g., RTX 3060 equivalent), as noted in the PRD. Provides fine-grained control over Unreal Engine’s systems.
+- **Blueprints**
+  - **Role**: Visual scripting system for rapid prototyping, implementing gameplay logic, menus, and UI elements.
+  - **Rationale**: Enables quick iteration, ideal for a prototype with a tight timeline. Reduces coding complexity for non-programmers, as seen in industry examples like [Udemy’s FPS course](https://www.udemy.com/course/unreal-engine-4-multiplayer-team-based-fps-in-blueprints/).
+
+### Networking
+- **Unreal Engine’s Built-in Networking**
+  - **Role**: Supports a Server-Client architecture with a listen server model, enabling 2-4 player LAN multiplayer.
+  - **Rationale**: Eliminates the need for external networking solutions, keeping costs low. Provides replication for game state (e.g., player positions, health) and RPCs for actions like shooting, as detailed in the Backend Structure document.
+  - **Implementation**:
+    - Listen server created via “Create Session” blueprint node.
+    - Client connections handled by direct IP input.
+    - Local prediction ensures responsive controller input (<50ms latency).
+
+### Version Control
+- **Git**
+  - **Role**: Manages source code, Blueprints, and assets, enabling collaboration and version tracking.
+  - **Rationale**: Standard in game development for small teams, as mentioned in the Frontline Guidelines. A private repository ensures secure access, supporting the project’s documentation needs.
+
+### Project Management
+- **Trello or Jira**
+  - **Role**: Tracks tasks, milestones, and progress, facilitating agile development.
+  - **Rationale**: Recommended in the Frontline Guidelines for Scrum-based workflows. Trello’s simplicity suits a small team, while Jira offers scalability if needed, ensuring alignment with weekly check-ins.
+
+### Asset Creation
+- **Existing Assets**
+  - **Role**: Utilizes the client’s previous Unreal Engine 5.4 build or free assets from the [Unreal Marketplace](https://www.unrealengine.com/marketplace/en-US/store).
+  - **Rationale**: Reduces development costs, critical for the $1,000 budget. Templates like those in [FPS Multiplayer Template](https://www.fab.com/listings/29219f54-56aa-45bb-92f9-01ca45833fe5) could accelerate map and mechanic implementation.
+- **Potential Tools**:
+  - **Blender**
+    - **Role**: 3D modeling for custom assets, if required.
+    - **Rationale**: Free and widely used, as noted in [Game-Ace’s tech stack](https://game-ace.com/blog/multiplayer-game-in-unreal/).
+  - **Substance Painter**
+    - **Role**: Texturing for custom assets.
+    - **Rationale**: Industry-standard for realistic textures, though likely minimal for the prototype.
+  - **Audacity**
+    - **Role**: Audio editing for custom sound effects.
+    - **Rationale**: Free tool for basic audio needs, suitable for placeholder effects.
+
+### Audio
+- **Unreal Engine’s Audio System**
+  - **Role**: Manages sound effects for weapons, footsteps, and ambient audio.
+  - **Rationale**: Built-in system supports spatial audio, sufficient for a prototype, as per the PRD’s audio feature.
+- **Free Sound Effects**
+  - **Role**: Placeholder audio assets for prototyping.
+  - **Rationale**: Cost-effective, aligning with budget constraints. Sourced from free libraries or Unreal Marketplace.
+
+### Deployment
+- **Unreal Engine’s Build Tools**
+  - **Role**: Packages the game as a Windows executable for distribution.
+  - **Rationale**: Ensures compatibility with mid-range PCs, as specified in the SRS. Simplifies sharing with playtesters and investors via file-sharing platforms.
+
+### Development Environment
+- **Visual Studio**
+  - **Role**: IDE for C++ development and debugging.
+  - **Rationale**: Standard for Unreal Engine C++ projects, providing robust tools for code management.
+- **Unreal Engine Editor**
+  - **Role**: Primary environment for level design, Blueprint scripting, asset integration, and testing.
+  - **Rationale**: Central hub for all development tasks, streamlining workflows.
+
+## Additional Considerations
+- **Controller Support**: Handled by Unreal Engine’s input system, optimized for Xbox-style controllers with mappings defined in the SRS (e.g., right trigger for shooting).
+- **User Interface**: Created using UMG for menus (main menu, multiplayer menu, pause menu) and HUD (health, ammo, timer), ensuring controller navigability.
+- **No External Middleware**: Physics, animation, and rendering rely on Unreal Engine’s built-in systems, avoiding additional costs or complexity.
+- **Platform**: Windows PC, as the primary target for the prototype, ensuring broad accessibility for playtesting.
+
+## Budget Alignment
+The tech stack is designed to maximize efficiency within the $1,000 budget:
+- **Unreal Engine**: Free for development, with no licensing fees for a prototype.
+- **Free Tools**: Git, Blender, and Audacity incur no costs.
+- **Asset Reuse**: Leveraging existing assets or Marketplace freebies minimizes expenses.
+- **Built-in Features**: Using Unreal’s networking and audio systems avoids third-party solutions like Photon or FMOD, which could increase costs.
+
+## Comparison to Industry Practices
+The tech stack aligns with industry standards for Unreal Engine multiplayer FPS prototypes, as seen in resources like [Getgud.io’s guide](https://www.getgud.io/blog/how-to-create-a-multiplayer-game-that-scales-the-ultimate-tech-stack-guide/). Compared to larger projects:
+- **Fortnite**: Uses Unreal Engine with dedicated servers and Epic’s Online Services, far beyond *PulseFire*’s scope.
+- **Indie FPS Prototypes**: Often rely on listen servers and Blueprints, similar to *PulseFire*, as noted in [Udemy’s C++ shooter course](https://www.udemy.com/course/unreal-engine-5-cpp-multiplayer-shooter/).
+*PulseFire*’s stack is leaner, prioritizing built-in tools to meet budget constraints while maintaining quality.
+
+| **Category**            | **PulseFire Tech Stack**                     | **Typical Indie FPS Stack**                  |
+|-------------------------|----------------------------------------------|----------------------------------------------|
+| **Game Engine**         | Unreal Engine 5.4                           | Unreal Engine 4/5, Unity                     |
+| **Programming**         | C++, Blueprints                              | C++, Blueprints, C# (Unity)                  |
+| **Networking**          | Unreal’s built-in (listen server)            | Unreal/Unity networking, Photon              |
+| **Asset Creation**      | Existing assets, Blender, Substance Painter | Blender, Maya, Marketplace assets            |
+| **Audio**               | Unreal audio, free effects                   | Unreal/Unity audio, FMOD, Wwise              |
+| **Deployment**          | Unreal build tools (Windows)                 | Unreal/Unity build tools, Steam              |
+
+## Challenges and Mitigations
+- **Challenge**: Limited budget restricts tool licenses or asset purchases.
+  - **Mitigation**: Use free tools (Blender, Audacity) and existing assets, as recommended in the Job Analysis report.
+- **Challenge**: Ensuring multiplayer stability with a small team.
+  - **Mitigation**: Leverage Unreal’s robust networking, thoroughly tested during playtests, as per the Frontline Guidelines.
+- **Challenge**: Balancing C++ and Blueprints for performance and speed.
+  - **Mitigation**: Use C++ for critical systems and Blueprints for rapid iteration, as outlined in the PRD.
+
+## Future Scalability
+While the prototype focuses on a small-scale LAN setup, the tech stack supports potential growth:
+- **Dedicated Servers**: Unreal’s networking can transition to dedicated servers for 8+ players.
+- **Cross-Platform**: Unreal Engine supports consoles and macOS, enabling future ports.
+- **Advanced Features**: Tools like FMOD or cloud services could be integrated for a full game, pending funding.
+
+## Conclusion
+The tech stack for *PulseFire* is a carefully curated set of technologies that enables the development of a compelling FPS prototype within budget constraints. Unreal Engine 5.4 forms the backbone, supported by C++ and Blueprints for flexible coding, built-in networking for multiplayer, and free tools for asset creation and management. This stack meets the needs of FPS gamers seeking responsive gameplay and investors looking for a viable proof-of-concept, positioning *PulseFire* for success in playtesting and potential expansion.
+
+## Key Citations
+- [How to Make a Multiplayer Game in Unreal Engine - Game-Ace](https://game-ace.com/blog/multiplayer-game-in-unreal/)
+- [How to Create a Multiplayer Game That Scales: The Ultimate Tech Stack Guide - Getgud.io](https://www.getgud.io/blog/how-to-create-a-multiplayer-game-that-scales-the-ultimate-tech-stack-guide/)
+- [Unreal Engine 4 - Multiplayer Team Based FPS In Blueprints | Udemy](https://www.udemy.com/course/unreal-engine-4-multiplayer-team-based-fps-in-blueprints/)
+- [Unreal Engine 5 C++ Multiplayer Shooter | Udemy](https://www.udemy.com/course/unreal-engine-5-cpp-multiplayer-shooter/)
+- [FPS Multiplayer Template 5 | Fab](https://www.fab.com/listings/29219f54-56aa-45bb-92f9-01ca45833fe5)

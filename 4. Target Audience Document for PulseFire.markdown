@@ -1,0 +1,24 @@
+# Target Audience Document for *PulseFire*
+
+## Introduction
+This document defines the target audience for *PulseFire*, a first-person shooter (FPS) prototype developed using Unreal Engine, with plans for a full game. The prototype combines tactical gameplay inspired by *Tom Clancy’s Rainbow Six Vegas* with the high-energy action of *Call of Duty*, emphasizing responsive controller-based shooting mechanics. The target audience is informed by the game’s features, genre, and demographics of similar titles, as outlined in the Product Description and Job Analysis report. The document addresses both the immediate audience for the prototype and the broader audience for the envisioned full game.
+
+## Target Audience for the Prototype
+The prototype serves as a proof-of-concept to validate gameplay mechanics and secure funding for further development. Its primary audience includes:
+
+1. **Client and Playtesters:**
+   - **Profile:** Experienced gamers familiar with FPS titles, likely aged 18-35, who enjoy games like *Rainbow Six Vegas* and *Call of Duty*.
+   - **Role:** Provide feedback on controller mechanics, multiplayer functionality, and overall gameplay experience.
+   - **Interests:** Engaged in testing new game concepts, with a focus on responsive controls and tactical/action gameplay.
+   - **Behavior:** Likely active in gaming communities, providing detailed feedback to shape development.
+
+2. **Potential Investors and Publishers:**
+   - **Profile:** Industry professionals, including game publishers and venture capitalists, seeking innovative FPS projects.
+   - **Role:** Evaluate the prototype’s market potential and technical quality to decide on funding or publishing opportunities.
+   - **Interests:** Interested in the size and engagement of the target audience, as well as the game’s unique selling points.
+   - **Behavior:** Attend industry events, review prototypes, and analyze market trends to identify promising projects.
+
+3. **Game Developers and Collaborators:**
+   - **Profile:** Developers or studios interested in contributing to or partnering on FPS projects.
+   - **Role:** Assess the prototype’s technical foundation and potential for collaboration.
+   - **Interests:** Innovative game mechanics, Unreal Engine development, and opportunities for portfolio

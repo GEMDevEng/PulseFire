@@ -1,0 +1,231 @@
+# Full List of Tickets for PulseFire Project
+
+Below is a comprehensive list of tickets for the *PulseFire* project, an FPS prototype with multiplayer features and controller support. Each ticket includes a title, description, acceptance criteria, estimated time, and dependencies to guide the development process from setup to delivery.
+
+---
+
+## Phase 1: Project Setup
+
+- **PF-001: Install Unreal Engine 5.4**
+  - **Description**: Download and install Unreal Engine 5.4 from the Epic Games Launcher.
+  - **Acceptance Criteria**: Unreal Engine 5.4 is installed and launches successfully.
+  - **Estimated Time**: 2 hours
+  - **Dependencies**: None
+
+- **PF-002: Create New Unreal Engine Project**
+  - **Description**: Create a new project using the First Person template in Unreal Engine 5.4.
+  - **Acceptance Criteria**: Project is created and opens without errors.
+  - **Estimated Time**: 1 hour
+  - **Dependencies**: PF-001
+
+- **PF-003: Set Up Git Repository**
+  - **Description**: Initialize a Git repository for the project and configure .gitignore for Unreal Engine files.
+  - **Acceptance Criteria**: Git repository is set up, and initial commit is made.
+  - **Estimated Time**: 1 hour
+  - **Dependencies**: None
+
+- **PF-004: Import Initial Assets**
+  - **Description**: Import player model, basic map, and placeholder assets from the client's previous build or free marketplace assets.
+  - **Acceptance Criteria**: Assets are imported and visible in the project.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: PF-002
+
+- **PF-005: Configure Project Settings**
+  - **Description**: Set up input controls for controllers, target 60 FPS, and enable networking.
+  - **Acceptance Criteria**: Project settings are configured as specified.
+  - **Estimated Time**: 2 hours
+  - **Dependencies**: PF-002
+
+- **PF-006: Commit Initial Project to Git**
+  - **Description**: Commit the initial project setup to the Git repository.
+  - **Acceptance Criteria**: All initial files are committed and pushed to the repository.
+  - **Estimated Time**: 30 minutes
+  - **Dependencies**: PF-003, PF-004, PF-005
+
+---
+
+## Phase 2: Core Mechanics Development
+
+- **PF-007: Implement Player Movement**
+  - **Description**: Create a player character blueprint with movement capabilities: walking, jumping, and crouching.
+  - **Acceptance Criteria**: Player can move using keyboard/mouse or controller inputs.
+  - **Estimated Time**: 8 hours
+  - **Dependencies**: PF-004, PF-005
+
+- **PF-008: Develop Shooting Mechanics**
+  - **Description**: Add a default weapon to the player, implement raycast-based shooting, include ammo management and reloading.
+  - **Acceptance Criteria**: Player can shoot, ammo decreases, and reloading works.
+  - **Estimated Time**: 12 hours
+  - **Dependencies**: PF-007
+
+- **PF-009: Integrate Controller Input**
+  - **Description**: Map controller inputs to movement, shooting, jumping, crouching, and reloading actions.
+  - **Acceptance Criteria**: All actions can be performed using a controller.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: PF-007, PF-008
+
+- **PF-010: Create Health System**
+  - **Description**: Implement a health system where players start with 100 health, lose health when hit, and die at zero.
+  - **Acceptance Criteria**: Health decreases on damage, death occurs at zero health.
+  - **Estimated Time**: 6 hours
+  - **Dependencies**: PF-008
+
+- **PF-011: Implement Respawn Logic**
+  - **Description**: Set up respawn points and logic to respawn players after 5 seconds upon death.
+  - **Acceptance Criteria**: Players respawn at designated points after death.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: PF-010
+
+- **PF-012: Test Core Mechanics**
+  - **Description**: Test movement, shooting, health, and respawn functionality for bugs and balance.
+  - **Acceptance Criteria**: Core mechanics work as expected without major issues.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: PF-007 to PF-011
+
+---
+
+## Phase 3: Multiplayer Integration
+
+- **PF-013: Configure Listen Server**
+  - **Description**: Set up the project to use a listen server for multiplayer sessions.
+  - **Acceptance Criteria**: A player can host a game session.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: PF-005
+
+- **PF-014: Implement Session Management**
+  - **Description**: Use Blueprints to implement hosting and joining games via IP address.
+  - **Acceptance Criteria**: Players can host and join sessions using IP.
+  - **Estimated Time**: 8 hours
+  - **Dependencies**: PF-013
+
+- **PF-015: Replicate Player Actions**
+  - **Description**: Ensure player movement, shooting, and health are replicated across clients.
+  - **Acceptance Criteria**: Actions are synchronized in multiplayer.
+  - **Estimated Time**: 12 hours
+  - **Dependencies**: PF-014, PF-007 to PF-011
+
+- **PF-016: Handle Player Connections**
+  - **Description**: Manage player connections, disconnections, and reconnections gracefully.
+  - **Acceptance Criteria**: Players can join, leave, and rejoin without crashing.
+  - **Estimated Time**: 6 hours
+  - **Dependencies**: PF-014
+
+- **PF-017: Test Multiplayer Functionality**
+  - **Description**: Test multiplayer with 2-4 players for stability, sync, and performance.
+  - **Acceptance Criteria**: Multiplayer works smoothly with minimal lag.
+  - **Estimated Time**: 8 hours
+  - **Dependencies**: PF-013 to PF-016
+
+---
+
+## Phase 4: UI and Match Structure
+
+- **PF-018: Design Main Menu**
+  - **Description**: Create a main menu with "Multiplayer" and "Quit" options using UMG.
+  - **Acceptance Criteria**: Menu is functional and navigable with controller.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: None
+
+- **PF-019: Implement Multiplayer Menu**
+  - **Description**: Add a multiplayer menu with options to host or join a game, including IP input.
+  - **Acceptance Criteria**: Players can access host/join options from the main menu.
+  - **Estimated Time**: 6 hours
+  - **Dependencies**: PF-018
+
+- **PF-020: Create In-Game HUD**
+  - **Description**: Design and implement HUD elements for health, ammo, and match timer.
+  - **Acceptance Criteria**: HUD displays correct information during gameplay.
+  - **Estimated Time**: 8 hours
+  - **Dependencies**: None
+
+- **PF-021: Develop Match Logic**
+  - **Description**: Implement a 5-minute match timer and scoring system based on kills.
+  - **Acceptance Criteria**: Matches end after 5 minutes, scores are tracked.
+  - **Estimated Time**: 6 hours
+  - **Dependencies**: PF-015
+
+- **PF-022: Implement Results Screen**
+  - **Description**: Create a screen to display final scores and the winner after a match.
+  - **Acceptance Criteria**: Results screen shows accurate scores and winner.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: PF-021
+
+- **PF-023: Test UI and Match Flow**
+  - **Description**: Verify that menus, HUD, and match progression work correctly.
+  - **Acceptance Criteria**: UI is functional, matches start and end properly.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: PF-018 to PF-022
+
+---
+
+## Phase 5: Testing and Refinement
+
+- **PF-024: Conduct Internal Testing**
+  - **Description**: Test the entire game for bugs, performance issues, and gameplay balance.
+  - **Acceptance Criteria**: Identify and document all major issues.
+  - **Estimated Time**: 8 hours
+  - **Dependencies**: All previous phases
+
+- **PF-025: Organize Playtest Sessions**
+  - **Description**: Arrange playtests with external players to gather feedback on gameplay and controls.
+  - **Acceptance Criteria**: Collect feedback from at least two playtest sessions.
+  - **Estimated Time**: 12 hours
+  - **Dependencies**: PF-024
+
+- **PF-026: Refine Based on Feedback**
+  - **Description**: Make adjustments to controller sensitivity, mechanics, and UI based on playtest feedback.
+  - **Acceptance Criteria**: Implement key feedback to improve player experience.
+  - **Estimated Time**: 8 hours
+  - **Dependencies**: PF-025
+
+- **PF-027: Optimize Performance**
+  - **Description**: Ensure the game runs at 60 FPS with low latency on target hardware.
+  - **Acceptance Criteria**: Game meets performance targets in testing.
+  - **Estimated Time**: 6 hours
+  - **Dependencies**: PF-026
+
+- **PF-028: Document Testing Results**
+  - **Description**: Record all bugs, feedback, and refinements made during testing.
+  - **Acceptance Criteria**: Comprehensive testing documentation is available.
+  - **Estimated Time**: 2 hours
+  - **Dependencies**: PF-024 to PF-027
+
+---
+
+## Phase 6: Finalization and Delivery
+
+- **PF-029: Package the Game**
+  - **Description**: Use Unreal Engine's build tools to package the game as a Windows executable.
+  - **Acceptance Criteria**: A functional Windows build is created.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: All previous phases
+
+- **PF-030: Prepare Documentation**
+  - **Description**: Write setup instructions and playtesting guides for the client and playtesters.
+  - **Acceptance Criteria**: Documentation is clear and complete.
+  - **Estimated Time**: 6 hours
+  - **Dependencies**: PF-029
+
+- **PF-031: Share the Build**
+  - **Description**: Upload the build to a secure file-sharing platform and provide access to the client.
+  - **Acceptance Criteria**: Client can download and run the build.
+  - **Estimated Time**: 2 hours
+  - **Dependencies**: PF-029
+
+- **PF-032: Create Investor Materials**
+  - **Description**: Produce a demo video or presentation highlighting the prototype's features and potential.
+  - **Acceptance Criteria**: Materials are professional and showcase the game effectively.
+  - **Estimated Time**: 8 hours
+  - **Dependencies**: PF-029
+
+- **PF-033: Conduct Final Review**
+  - **Description**: Review all deliverables to ensure they meet project standards and requirements.
+  - **Acceptance Criteria**: All deliverables are complete and satisfactory.
+  - **Estimated Time**: 4 hours
+  - **Dependencies**: PF-029 to PF-032
+
+---
+
+## Summary
+
+This list comprises 33 tickets, organized into six phases: Project Setup, Core Mechanics Development, Multiplayer Integration, UI and Match Structure, Testing and Refinement, and Finalization and Delivery. Each ticket is designed to be manageable, with clear objectives and dependencies to ensure smooth progression of the *PulseFire* prototype development.

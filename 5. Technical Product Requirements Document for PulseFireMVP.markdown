@@ -1,0 +1,157 @@
+# Technical Product Requirements Document (PRD) for *PulseFire* MVP
+
+## 1. Product Overview
+*PulseFire* is a first-person shooter (FPS) prototype built with Unreal Engine, emphasizing responsive controller-based shooting mechanics. Inspired by *Tom Clancy’s Rainbow Six Vegas* and *Call of Duty*, it features a small multiplayer map to test gameplay and secure funding for full development.
+
+## 2. User Stories
+Below are 25 user stories in Gherkin format, capturing the core functionality of the MVP:
+
+1. **Given** I am on the main menu, **when** I select "Multiplayer," **then** I should see options to host or join a game.
+2. **Given** I am in the multiplayer menu, **when** I select "Host Game," **then** I should create a local game session and see an IP address for others to join.
+3. **Given** I am in the multiplayer menu, **when** I select "Join Game" and enter a valid IP address, **then** I should connect to the host’s game session.
+4. **Given** I am in a game session, **when** I use the left analog stick, **then** my character should move forward, backward, left, or right.
+5. **Given** I am in a game session, **when** I use the right analog stick, **then** my character’s camera should rotate to look around.
+6. **Given** I am in a game session, **when** I press the A button, **then** my character should jump.
+7. **Given** I am in a game session, **when** I press the B button, **then** my character should crouch.
+8. **Given** I am in a game session, **when** I press the right bumper, **then** my character should aim down sights.
+9. **Given** I am in a game session, **when** I press the right trigger, **then** my character should fire their weapon.
+10. **Given** I am in a game session, **when** I press the X button, **then** my character should reload their weapon.
+11. **Given** I am in a game session, **when** I look at the HUD, **then** I should see my health bar.
+12. **Given** I am in a game session, **when** I look at the HUD, **then** I should see my current ammo count.
+13. **Given** I am in a game session, **when** I am hit by enemy bullets, **then** my health should decrease.
+14. **Given** my health reaches zero, **when** I die, **then** I should respawn after a 5-second delay.
+15. **Given** I am in a game session, **when** I encounter another player, **then** I should be able to shoot at them.
+16. **Given** I am in a game session, **when** the match timer reaches zero, **then** the game should end.
+17. **Given** the game ends, **when** the results screen appears, **then** I should see the final scores and winner.
+18. **Given** I am in a game session, **when** I use the controller, **then** the controls should feel responsive with no noticeable delay.
+19. **Given** I am playing the game, **when** I observe performance, **then** it should maintain 60 FPS without drops.
+20. **Given** I am in a game session, **when** I navigate the map, **then** I should find cover and open areas for tactical play.
+21. **Given** I am in the main menu, **when** I select "Quit," **then** the game should close.
+22. **Given** I am in a game session, **when** I press the Start button, **then** the pause menu should appear.
+23. **Given** I am in the pause menu, **when** I select "Resume," **then** I should return to the game.
+24. **Given** I am in the pause menu, **when** I select "Main Menu," **then** I should exit the game session.
+25. **Given** I am in a game session, **when** I hit an enemy, **then** I should see a hit marker for feedback.
+
+## 3. User Flows
+### Main Multiplayer Flow
+1. Player launches *PulseFire* and sees the main menu.
+2. Player selects "Multiplayer" to access multiplayer options.
+3. Player chooses "Host Game" to create a session, receiving an IP address.
+4. Other players select "Join Game," enter the host’s IP, and connect.
+5. Host starts the match, spawning all players on the map.
+6. Players engage in combat until the timer expires or a score limit is reached.
+7. Game displays results and returns to the main menu.
+
+### In-Game Combat Flow
+1. Player spawns at a designated point on the map.
+2. Player uses controller to move and look around.
+3. Player encounters an enemy, aims, and shoots.
+4. If hit, player’s health decreases; if killed, they respawn after 5 seconds.
+5. Player continues until the match ends.
+
+## 4. Screens and UI/UX
+- **Main Menu:**
+  - Displays "Multiplayer" and "Quit" buttons.
+  - Simple, controller-navigable layout.
+- **Multiplayer Menu:**
+  - Options: "Host Game," "Join Game."
+  - Clear button prompts for controller input.
+- **Host Game Screen:**
+  - Shows IP address for joining.
+  - "Start Game" button, highlighted when ready.
+- **Join Game Screen:**
+  - Text field for IP address input.
+  - "Join" button, responsive to controller.
+- **In-Game HUD:**
+  - Health bar (top-left, red/green gradient).
+  - Ammo count (bottom-right, numeric display).
+  - Crosshair (center, white with dynamic scaling).
+  - Timer/score (top-right, minimal text).
+- **Pause Menu:**
+  - Options: "Resume," "Main Menu."
+  - Centered, semi-transparent overlay.
+
+## 5. Features and Functionality
+- **Player Movement:** Implements walking, running (via left analog stick press), jumping (A button), crouching (B button) using Unreal’s CharacterMovementComponent.
+- **Shooting Mechanics:** Supports aiming (right analog stick), firing (right trigger) with raycast-based hit detection, and reloading (X button) with animation.
+- **Health System:** Players start with 100 health, lose points per hit (e.g., 25 per bullet), die at zero, and respawn after 5 seconds.
+- **Multiplayer Networking:** Supports 2-4 players via LAN using a listen server, replicating player positions, rotations, and actions.
+- **Map:** A single 500x500-meter map with static meshes for cover (walls, crates) and open areas, built in Unreal’s level editor.
+- **User Interface:** HUD displays health, ammo, and timer using UMG widgets; menus use blueprint-driven navigation.
+- **Controller Support:** Maps inputs to Xbox-style controllers, with adjustable sensitivity via Unreal’s input settings.
+- **Audio:** Basic sound effects for shooting and footsteps using placeholder assets.
+
+## 6. Technical Architecture
+- **Game Engine:** Unreal Engine 5.4, leveraging blueprints and C++ for logic.
+- **Networking Model:** Listen server architecture, where one player hosts and others join as clients.
+- **Client:** Handles rendering (DirectX 12), input processing, and local prediction.
+- **Server:** Manages authoritative game state, replication, and RPCs for synchronization.
+- **Asset Pipeline:** Uses Unreal’s asset library, potentially integrating client-provided assets or marketplace templates.
+
+## 7. System Design
+- **Client-Side Components:**
+  - **PlayerController:** Processes controller inputs, manages camera.
+  - **Character:** Handles movement, collision, and shooting logic.
+  - **HUD:** Renders UMG widgets for health, ammo, and timer.
+  - **Menu System:** Blueprint-driven menus for navigation.
+- **Server-Side Components:**
+  - **GameMode:** Defines match rules (e.g., 5-minute timer, 50-point score limit).
+  - **GameState:** Tracks match time, scores, and player connections.
+  - **PlayerState:** Stores per-player data (kills, deaths).
+- **Shared Components:**
+  - **Weapon:** Blueprint class with properties for damage, fire rate.
+  - **Map:** Level blueprint with spawn points, collision volumes.
+- **Networking:** Unreal’s replication system synchronizes actors (players, projectiles) and variables (health, ammo).
+
+## 8. API Specifications
+No external APIs are required for the MVP. All functionality is implemented within Unreal Engine using blueprints and C++ for internal logic and networking.
+
+## 9. Data Model
+| **Entity**         | **Attributes**                                                                 |
+|--------------------|-------------------------------------------------------------------------------|
+| **PlayerCharacter**| Health (float), MaxHealth (float), CurrentWeapon (Weapon), Ammo (int), Position (Vector), Rotation (Rotator) |
+| **Weapon**         | Damage (float), FireRate (float), MagazineSize (int), CurrentAmmo (int)       |
+| **GameState**      | MatchTime (float), TeamAScore (int), TeamBScore (int)                         |
+| **PlayerState**    | PlayerName (string), Team (int), Kills (int), Deaths (int)                    |
+
+Relationships:
+- PlayerCharacter owns one CurrentWeapon.
+- GameState aggregates PlayerStates for all players.
+- Map contains multiple PlayerCharacters and static assets.
+
+## 10. Security Considerations
+- **Server-Authoritative Logic:** Hit detection and movement validation occur on the server to prevent client-side cheating.
+- **Input Validation:** Restricts movement speed and firing rates to predefined limits.
+- **Network Security:** Leverages Unreal Engine’s built-in encryption for network traffic.
+- **Data Integrity:** Ensures game state (scores, health) is only modified server-side.
+
+## 11. Performance Requirements
+- **Frame Rate:** Minimum 60 FPS at 1080p on mid-range PCs (e.g., RTX 3060 equivalent).
+- **Input Latency:** Less than 50ms from controller input to on-screen action.
+- **Network Latency:** Target ping below 100ms for LAN multiplayer.
+- **Load Time:** Game loads within 10 seconds on target hardware.
+
+## 12. Scalability Considerations
+The MVP supports 2-4 players on a small map using a listen server. For future scalability:
+- Transition to dedicated servers for 8+ players.
+- Optimize map assets for larger environments.
+- Implement level streaming for expansive maps.
+
+## 13. Testing Strategy
+- **Unit Testing:** Validate movement, shooting, and health logic in isolation.
+- **Integration Testing:** Ensure networking, UI, and gameplay systems interact correctly.
+- **Playtesting:** Conduct sessions with 2-4 players to assess controller responsiveness and map balance.
+- **Load Testing:** Simulate maximum player count to verify stability.
+- **Compatibility Testing:** Test on various PC specs and controller types (Xbox, PlayStation).
+
+## 14. Deployment Plan
+- **Build Process:** Package the game as a Windows executable using Unreal’s packaging tool.
+- **Distribution:** Share the build via secure file-sharing (e.g., Google Drive) with client and playtesters.
+- **Setup Instructions:** Provide documentation for LAN setup, including firewall settings.
+- **Timeline:** Deliver build within 2-3 weeks, pending testing completion.
+
+## 15. Maintenance and Support
+- **Version Control:** Use Git for source control, hosted on a private repository.
+- **Issue Tracking:** Log bugs and feedback in Trello, prioritizing critical issues.
+- **Updates:** Release patches based on playtest feedback, delivered via updated builds.
+- **Communication:** Weekly email updates to client, with Discord for playtester feedback.
