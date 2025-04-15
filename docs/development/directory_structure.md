@@ -1,3 +1,6 @@
+# PulseFire Directory Structure
+
+```
 /PulseFire
 ├── /Config
 │   ├── DefaultEngine.ini
@@ -82,3 +85,4 @@
 ├── /.gitignore
 ├── /README.md
 └── /PulseFire.uproject
+```
