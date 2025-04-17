@@ -1,6 +1,7 @@
 #include "WeaponFactory.h"
 #include "AssaultRifle.h"
 #include "Shotgun.h"
+#include "SniperRifle.h"
 #include "../PulseFireCharacter.h"
 
 UWeaponFactory::UWeaponFactory()
@@ -45,6 +46,8 @@ TSubclassOf<ABaseWeapon> UWeaponFactory::GetWeaponClass(EWeaponType WeaponType)
         return AAssaultRifle::StaticClass();
     case EWeaponType::Shotgun:
         return AShotgun::StaticClass();
+    case EWeaponType::SniperRifle:
+        return ASniperRifle::StaticClass();
     // Add more weapon types as they are implemented
     default:
         return AAssaultRifle::StaticClass(); // Default to assault rifle
