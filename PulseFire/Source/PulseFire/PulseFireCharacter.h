@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Components/Movement/PulseFireMovementComponent.h"
 #include "PulseFireCharacter.generated.h"
 
 class UInputComponent;
@@ -11,6 +12,8 @@ class USkeletalMeshComponent;
 class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
+class UHealthComponent;
+class AWeapon;
 
 /**
  * The player character for PulseFire.
@@ -48,6 +51,14 @@ protected:
 	void LookUp(float Value);
 	void Turn(float Value);
 
+	/** Called for sprint input */
+	void StartSprint();
+	void StopSprint();
+
+	/** Called for aim input */
+	void StartAiming();
+	void StopAiming();
+
 	/** Called for crouch input */
 	void StartCrouch();
 	void StopCrouch();
@@ -72,7 +83,7 @@ protected:
 	/** Performs a line trace to determine hit */
 	FHitResult PerformLineTrace() const;
 
-public:	
+public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -97,13 +108,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	uint8 bUsingMotionControllers : 1;
 
-	/** Current health of the character */
-	UPROPERTY(Replicated, BlueprintReadOnly, Category=Gameplay)
-	float Health;
+	/** Health component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components)
+	UHealthComponent* HealthComponent;
 
-	/** Maximum health of the character */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Gameplay)
-	float MaxHealth;
+	/** Current weapon */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = Gameplay)
+	AWeapon* CurrentWeapon;
+
+	/** Whether the player is currently aiming down sights */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = Gameplay)
+	bool bIsAiming;
+
+	/** Whether the player is currently sprinting */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = Gameplay)
+	bool bIsSprinting;
 
 	/** Current ammo in magazine */
 	UPROPERTY(Replicated, BlueprintReadOnly, Category=Gameplay)
@@ -128,4 +147,10 @@ public:
 
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	/** Returns the custom movement component **/
+	FORCEINLINE UPulseFireMovementComponent* GetPulseFireMovementComponent() const { return Cast<UPulseFireMovementComponent>(GetCharacterMovement()); }
+
+	/** Setup player input component **/
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 };
