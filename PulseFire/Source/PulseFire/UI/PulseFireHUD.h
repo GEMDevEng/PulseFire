@@ -2,6 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "MainMenuWidget.h"
+#include "MultiplayerMenuWidget.h"
+#include "PauseMenuWidget.h"
+#include "MatchResultsWidget.h"
+#include "HUDWidget.h"
 #include "PulseFireHUD.generated.h"
 
 /**
@@ -12,7 +17,7 @@ UCLASS()
 class PULSEFIRE_API APulseFireHUD : public AHUD
 {
     GENERATED_BODY()
-    
+
 public:
     APulseFireHUD();
 
@@ -49,43 +54,43 @@ protected:
 
     /** Main menu widget class */
     UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UUserWidget> MainMenuClass;
+    TSubclassOf<UMainMenuWidget> MainMenuClass;
 
     /** Multiplayer menu widget class */
     UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UUserWidget> MultiplayerMenuClass;
+    TSubclassOf<UMultiplayerMenuWidget> MultiplayerMenuClass;
 
     /** Pause menu widget class */
     UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UUserWidget> PauseMenuClass;
+    TSubclassOf<UPauseMenuWidget> PauseMenuClass;
 
     /** Match results widget class */
     UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UUserWidget> MatchResultsClass;
+    TSubclassOf<UMatchResultsWidget> MatchResultsClass;
 
     /** HUD widget class */
     UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UUserWidget> HUDWidgetClass;
+    TSubclassOf<UHUDWidget> HUDWidgetClass;
 
     /** Main menu widget instance */
     UPROPERTY()
-    class UUserWidget* MainMenuWidget;
+    UMainMenuWidget* MainMenuWidget;
 
     /** Multiplayer menu widget instance */
     UPROPERTY()
-    class UUserWidget* MultiplayerMenuWidget;
+    UMultiplayerMenuWidget* MultiplayerMenuWidget;
 
     /** Pause menu widget instance */
     UPROPERTY()
-    class UUserWidget* PauseMenuWidget;
+    UPauseMenuWidget* PauseMenuWidget;
 
     /** Match results widget instance */
     UPROPERTY()
-    class UUserWidget* MatchResultsWidget;
+    UMatchResultsWidget* MatchResultsWidget;
 
     /** HUD widget instance */
     UPROPERTY()
-    class UUserWidget* HUDWidget;
+    UHUDWidget* HUDWidget;
 
     /** Draw health bar */
     void DrawHealthBar();
@@ -98,4 +103,15 @@ protected:
 
     /** Draw crosshair */
     void DrawCrosshair();
+
+    /** Update HUD widget */
+    void UpdateHUDWidget();
+
+    /** Match state changed callback */
+    UFUNCTION()
+    void OnMatchStateChanged(FName NewState);
+
+    /** Match ended callback */
+    UFUNCTION()
+    void OnMatchEnded();
 };

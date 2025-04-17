@@ -6,6 +6,7 @@
 #include "../PulseFireCharacter.h"
 #include "../Weapons/BaseWeapon.h"
 #include "../Multiplayer/PulseFireGameState.h"
+#include "../Multiplayer/PulseFireGameMode.h"
 #include "../Components/HealthComponent.h"
 
 APulseFireHUD::APulseFireHUD()
@@ -20,7 +21,7 @@ void APulseFireHUD::BeginPlay()
     // Create widgets
     if (HUDWidgetClass)
     {
-        HUDWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), HUDWidgetClass);
+        HUDWidget = CreateWidget<UHUDWidget>(GetOwningPlayerController(), HUDWidgetClass);
         if (HUDWidget)
         {
             HUDWidget->AddToViewport();
@@ -29,22 +30,30 @@ void APulseFireHUD::BeginPlay()
 
     if (MainMenuClass)
     {
-        MainMenuWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), MainMenuClass);
+        MainMenuWidget = CreateWidget<UMainMenuWidget>(GetOwningPlayerController(), MainMenuClass);
     }
 
     if (MultiplayerMenuClass)
     {
-        MultiplayerMenuWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), MultiplayerMenuClass);
+        MultiplayerMenuWidget = CreateWidget<UMultiplayerMenuWidget>(GetOwningPlayerController(), MultiplayerMenuClass);
     }
 
     if (PauseMenuClass)
     {
-        PauseMenuWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), PauseMenuClass);
+        PauseMenuWidget = CreateWidget<UPauseMenuWidget>(GetOwningPlayerController(), PauseMenuClass);
     }
 
     if (MatchResultsClass)
     {
-        MatchResultsWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), MatchResultsClass);
+        MatchResultsWidget = CreateWidget<UMatchResultsWidget>(GetOwningPlayerController(), MatchResultsClass);
+    }
+
+    // Register for game mode events
+    APulseFireGameMode* GameMode = Cast<APulseFireGameMode>(GetWorld()->GetAuthGameMode());
+    if (GameMode)
+    {
+        GameMode->OnMatchStateChangedEvent.AddDynamic(this, &APulseFireHUD::OnMatchStateChanged);
+        GameMode->OnMatchEndedEvent.AddDynamic(this, &APulseFireHUD::OnMatchEnded);
     }
 }
 
@@ -52,10 +61,15 @@ void APulseFireHUD::DrawHUD()
 {
     Super::DrawHUD();
 
-    // Only draw HUD elements if we're not showing a menu
-    if (!MainMenuWidget || !MainMenuWidget->IsInViewport())
+    // Only draw HUD elements if we're not showing a menu and we have a HUD widget
+    if (HUDWidget && HUDWidget->IsInViewport())
     {
-        // Draw HUD elements
+        // Update HUD widget
+        UpdateHUDWidget();
+    }
+    else if (!MainMenuWidget || !MainMenuWidget->IsInViewport())
+    {
+        // Draw HUD elements directly on canvas
         DrawHealthBar();
         DrawAmmoCounter();
         DrawMatchTimer();
@@ -69,7 +83,18 @@ void APulseFireHUD::ShowMainMenu()
 
     if (MainMenuWidget)
     {
-        MainMenuWidget->AddToViewport();
+        MainMenuWidget->ShowWithAnimation();
+
+        // Show cursor and set input mode
+        APlayerController* PC = GetOwningPlayerController();
+        if (PC)
+        {
+            PC->bShowMouseCursor = true;
+
+            FInputModeUIOnly InputMode;
+            InputMode.SetWidgetToFocus(MainMenuWidget->TakeWidget());
+            PC->SetInputMode(InputMode);
+        }
     }
 }
 
@@ -79,7 +104,18 @@ void APulseFireHUD::ShowMultiplayerMenu()
 
     if (MultiplayerMenuWidget)
     {
-        MultiplayerMenuWidget->AddToViewport();
+        MultiplayerMenuWidget->ShowWithAnimation();
+
+        // Show cursor and set input mode
+        APlayerController* PC = GetOwningPlayerController();
+        if (PC)
+        {
+            PC->bShowMouseCursor = true;
+
+            FInputModeUIOnly InputMode;
+            InputMode.SetWidgetToFocus(MultiplayerMenuWidget->TakeWidget());
+            PC->SetInputMode(InputMode);
+        }
     }
 }
 
@@ -89,7 +125,21 @@ void APulseFireHUD::ShowPauseMenu()
 
     if (PauseMenuWidget)
     {
-        PauseMenuWidget->AddToViewport();
+        PauseMenuWidget->ShowWithAnimation();
+
+        // Show cursor and set input mode
+        APlayerController* PC = GetOwningPlayerController();
+        if (PC)
+        {
+            PC->bShowMouseCursor = true;
+
+            FInputModeUIOnly InputMode;
+            InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
+            PC->SetInputMode(InputMode);
+
+            // Pause the game
+            PC->SetPause(true);
+        }
     }
 }
 
@@ -99,7 +149,20 @@ void APulseFireHUD::ShowMatchResults()
 
     if (MatchResultsWidget)
     {
-        MatchResultsWidget->AddToViewport();
+        // Update match results
+        MatchResultsWidget->UpdateMatchResults();
+        MatchResultsWidget->ShowWithAnimation();
+
+        // Show cursor and set input mode
+        APlayerController* PC = GetOwningPlayerController();
+        if (PC)
+        {
+            PC->bShowMouseCursor = true;
+
+            FInputModeUIOnly InputMode;
+            InputMode.SetWidgetToFocus(MatchResultsWidget->TakeWidget());
+            PC->SetInputMode(InputMode);
+        }
     }
 }
 
@@ -107,22 +170,39 @@ void APulseFireHUD::HideAllMenus()
 {
     if (MainMenuWidget && MainMenuWidget->IsInViewport())
     {
-        MainMenuWidget->RemoveFromViewport();
+        MainMenuWidget->HideWithAnimation();
     }
 
     if (MultiplayerMenuWidget && MultiplayerMenuWidget->IsInViewport())
     {
-        MultiplayerMenuWidget->RemoveFromViewport();
+        MultiplayerMenuWidget->HideWithAnimation();
     }
 
     if (PauseMenuWidget && PauseMenuWidget->IsInViewport())
     {
-        PauseMenuWidget->RemoveFromViewport();
+        PauseMenuWidget->HideWithAnimation();
+
+        // Unpause the game
+        APlayerController* PC = GetOwningPlayerController();
+        if (PC)
+        {
+            PC->SetPause(false);
+        }
     }
 
     if (MatchResultsWidget && MatchResultsWidget->IsInViewport())
     {
-        MatchResultsWidget->RemoveFromViewport();
+        MatchResultsWidget->HideWithAnimation();
+    }
+
+    // Reset input mode
+    APlayerController* PC = GetOwningPlayerController();
+    if (PC)
+    {
+        PC->bShowMouseCursor = false;
+
+        FInputModeGameOnly InputMode;
+        PC->SetInputMode(InputMode);
     }
 }
 
@@ -246,4 +326,62 @@ void APulseFireHUD::DrawCrosshair()
     LineItem.Origin = FVector2D(CenterX, CenterY - CrosshairSize);
     LineItem.EndPos = FVector2D(CenterX, CenterY + CrosshairSize);
     Canvas->DrawItem(LineItem);
+}
+
+void APulseFireHUD::UpdateHUDWidget()
+{
+    if (!HUDWidget)
+    {
+        return;
+    }
+
+    // Get player character
+    APulseFireCharacter* Character = Cast<APulseFireCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+    if (!Character)
+    {
+        return;
+    }
+
+    // Update health
+    UHealthComponent* HealthComp = Character->FindComponentByClass<UHealthComponent>();
+    if (HealthComp)
+    {
+        HUDWidget->UpdateHealth(HealthComp->GetHealthPercent());
+    }
+
+    // Update ammo
+    ABaseWeapon* Weapon = Character->CurrentWeapon;
+    if (Weapon)
+    {
+        HUDWidget->UpdateAmmo(Weapon->GetCurrentAmmo(), Weapon->GetMaxAmmo(), Weapon->GetCurrentReserveAmmo());
+        HUDWidget->UpdateWeaponName(Weapon->GetWeaponName());
+    }
+
+    // Update match timer
+    APulseFireGameState* GameState = GetWorld()->GetGameState<APulseFireGameState>();
+    if (GameState)
+    {
+        HUDWidget->UpdateMatchTimer(GameState->GetMatchTimeRemaining(), GameState->GetMatchDuration());
+    }
+}
+
+void APulseFireHUD::OnMatchStateChanged(FName NewState)
+{
+    // Handle match state changes
+    if (NewState == FName("MatchEnded"))
+    {
+        // Show match results
+        ShowMatchResults();
+    }
+    else if (NewState == FName("WaitingToStart"))
+    {
+        // Show main menu
+        ShowMainMenu();
+    }
+}
+
+void APulseFireHUD::OnMatchEnded()
+{
+    // Show match results
+    ShowMatchResults();
 }
