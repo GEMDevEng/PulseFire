@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "Components/Movement/PulseFireMovementComponent.h"
 #include "Weapons/BaseWeapon.h"
+#include "Multiplayer/PulseFireGameMode.h"
+#include "Multiplayer/PulseFirePlayerState.h"
 #include "PulseFireCharacter.generated.h"
 
 class UInputComponent;

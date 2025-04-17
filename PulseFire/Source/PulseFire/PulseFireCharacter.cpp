@@ -296,7 +296,38 @@ float APulseFireCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	// Let the health component handle damage
 	const float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	// Health component will handle death via its delegate
+	// Check if we're dead
+	if (HealthComponent && HealthComponent->GetHealth() <= 0.0f)
+	{
+		// Notify game mode of death
+		AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+		if (GameMode && GameMode->IsA(APulseFireGameMode::StaticClass()))
+		{
+			APulseFireGameMode* PulseFireGameMode = Cast<APulseFireGameMode>(GameMode);
+			PulseFireGameMode->OnPlayerKilled(this, EventInstigator);
+		}
+
+		// Update player state
+		APulseFirePlayerState* PS = GetPlayerState<APulseFirePlayerState>();
+		if (PS)
+		{
+			PS->AddDeath();
+		}
+
+		// Update killer's player state
+		if (EventInstigator && EventInstigator != GetController())
+		{
+			APulseFirePlayerState* KillerPS = EventInstigator->GetPlayerState<APulseFirePlayerState>();
+			if (KillerPS)
+			{
+				KillerPS->AddKill();
+			}
+		}
+
+		// Call death function
+		OnDeath();
+	}
+
 	return ActualDamage;
 }
 
