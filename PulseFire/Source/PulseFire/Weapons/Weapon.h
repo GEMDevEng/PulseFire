@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 #include "Weapon.generated.h"
 
 class USkeletalMeshComponent;
@@ -9,6 +10,8 @@ class UDamageType;
 class UParticleSystem;
 class USoundBase;
 class UAnimMontage;
+class UCameraShakeBase;
+class APulseFireCharacter;
 
 USTRUCT()
 struct FHitScanTrace
@@ -35,8 +38,8 @@ UCLASS()
 class PULSEFIRE_API AWeapon : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AWeapon();
 
@@ -44,29 +47,40 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	/** Weapon mesh */
+	/** Weapon mesh (1P view) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent* MeshComp;
 
-	/** Damage amount */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	float BaseDamage;
+	/** Weapon mesh (3P view) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USkeletalMeshComponent* MeshComp3P;
 
-	/** Rate of fire in rounds per minute */
+	/** Weapon data */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	float RateOfFire;
-
-	/** Maximum ammo capacity */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	int32 MaxAmmo;
+	FWeaponData WeaponData;
 
 	/** Current ammo in magazine */
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Weapon")
 	int32 CurrentAmmo;
 
-	/** Bullet spread in degrees */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", meta = (ClampMin = 0.0f))
-	float BulletSpread;
+	/** Current reserve ammo */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Weapon")
+	int32 CurrentReserveAmmo;
+
+	/** Whether the weapon is currently being reloaded */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Weapon")
+	bool bIsReloading;
+
+	/** Whether the weapon is currently being equipped */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Weapon")
+	bool bIsEquipping;
+
+	/** Whether the player is currently aiming down sights */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Weapon")
+	bool bIsAiming;
+
+	/** Current burst count (for burst fire mode) */
+	int32 CurrentBurstCount;
 
 	/** Muzzle socket name */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
@@ -96,9 +110,41 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	USoundBase* FireSound;
 
-	/** Fire animation */
+	/** Reload sound */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	UAnimMontage* FireAnimation;
+	USoundBase* ReloadSound;
+
+	/** Empty magazine sound */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundBase* EmptySound;
+
+	/** Fire animation (1P) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* FireAnimation1P;
+
+	/** Fire animation (3P) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* FireAnimation3P;
+
+	/** Reload animation (1P) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* ReloadAnimation1P;
+
+	/** Reload animation (3P) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* ReloadAnimation3P;
+
+	/** Equip animation (1P) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* EquipAnimation1P;
+
+	/** Equip animation (3P) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UAnimMontage* EquipAnimation3P;
+
+	/** Camera shake on fire */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<UCameraShakeBase> FireCameraShake;
 
 	/** Last time the weapon was fired */
 	float LastFireTime;
@@ -132,7 +178,7 @@ protected:
 	UFUNCTION()
 	void OnRep_HitScanTrace();
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -148,6 +194,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Reload();
 
+	/** Set aiming state */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SetAiming(bool bNewAiming);
+
+	/** Equip the weapon */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void Equip(APulseFireCharacter* NewOwner);
+
 	/** Get current ammo */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	int32 GetCurrentAmmo() const;
@@ -156,10 +210,70 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	int32 GetMaxAmmo() const;
 
+	/** Get current reserve ammo */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	int32 GetCurrentReserveAmmo() const;
+
+	/** Get maximum reserve ammo */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	int32 GetMaxReserveAmmo() const;
+
+	/** Get weapon name */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	FString GetWeaponName() const;
+
+	/** Get weapon type */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	EWeaponType GetWeaponType() const;
+
+	/** Get fire mode */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	EFireMode GetFireMode() const;
+
+	/** Get whether the weapon is reloading */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool IsReloading() const;
+
+	/** Get whether the weapon is being equipped */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool IsEquipping() const;
+
+	/** Get whether the weapon is aiming */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool IsAiming() const;
+
 private:
 	/** Fire the weapon */
 	void Fire();
 
+	/** Handle reload completion */
+	void FinishReload();
+
+	/** Handle equip completion */
+	void FinishEquip();
+
+	/** Apply recoil to the player's camera */
+	void ApplyRecoil();
+
+	/** Get current bullet spread based on state */
+	float GetCurrentSpread() const;
+
+	/** Get the owning character */
+	APulseFireCharacter* GetPulseFireCharacter() const;
+
 	/** Timer handle for automatic fire */
 	FTimerHandle TimerHandle_AutoFire;
+
+	/** Timer handle for reload */
+	FTimerHandle TimerHandle_Reload;
+
+	/** Timer handle for equip */
+	FTimerHandle TimerHandle_Equip;
+
+	/** Current recoil amount */
+	float CurrentRecoil;
+
+	/** Weapon display name */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	FString WeaponName;
 };

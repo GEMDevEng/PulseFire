@@ -6,7 +6,8 @@
 #include "Components/InputComponent.h"
 #include "Components/Movement/PulseFireMovementComponent.h"
 #include "Components/HealthComponent.h"
-#include "Weapons/Weapon.h"
+#include "Weapons/BaseWeapon.h"
+#include "Weapons/WeaponFactory.h"
 #include "GameFramework/Controller.h"
 #include "Net/UnrealNetwork.h"
 #include "DrawDebugHelpers.h"
@@ -47,12 +48,11 @@ APulseFireCharacter::APulseFireCharacter()
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
 
-	// Set default values for ammo and state
-	MaxAmmo = 30;
-	CurrentAmmo = MaxAmmo;
+	// Set default values for state
 	bIsFiring = false;
 	bIsAiming = false;
 	bIsSprinting = false;
+	DefaultWeaponType = EWeaponType::Rifle;
 
 	// Use custom movement component
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -76,17 +76,8 @@ void APulseFireCharacter::BeginPlay()
 	// Spawn the default weapon if we're the server
 	if (GetLocalRole() == ROLE_Authority)
 	{
-		// Spawn a default weapon
-		// Note: In a real implementation, we would spawn the weapon based on a weapon class property
-		// For now, we'll just use the weapon we've already created
-		// FActorSpawnParameters SpawnParams;
-		// SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		// SpawnParams.Owner = this;
-		// CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-		// if (CurrentWeapon)
-		// {
-		// 	CurrentWeapon->AttachToComponent(FP_Gun, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("GripPoint")));
-		// }
+		// Spawn the default weapon
+		SpawnAndEquipWeapon(DefaultWeaponType);
 	}
 }
 
@@ -95,8 +86,6 @@ void APulseFireCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Replicate to everyone
-	DOREPLIFETIME(APulseFireCharacter, CurrentAmmo);
-	DOREPLIFETIME(APulseFireCharacter, bIsFiring);
 	DOREPLIFETIME(APulseFireCharacter, bIsAiming);
 	DOREPLIFETIME(APulseFireCharacter, bIsSprinting);
 	DOREPLIFETIME(APulseFireCharacter, CurrentWeapon);
@@ -194,95 +183,112 @@ void APulseFireCharacter::StopJumping()
 
 void APulseFireCharacter::StartFire()
 {
-	if (CurrentAmmo > 0 && !bIsFiring)
+	if (CurrentWeapon)
 	{
-		bIsFiring = true;
-		ServerFire();
+		CurrentWeapon->StartFire();
 	}
 }
 
 void APulseFireCharacter::StopFire()
 {
-	bIsFiring = false;
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->StopFire();
+	}
 }
 
 void APulseFireCharacter::Reload()
 {
-	if (CurrentAmmo < MaxAmmo)
+	if (CurrentWeapon)
 	{
-		// In a real implementation, we would play reload animation and add a delay
-		CurrentAmmo = MaxAmmo;
+		CurrentWeapon->Reload();
 	}
 }
 
-bool APulseFireCharacter::ServerFire_Validate()
+void APulseFireCharacter::NextWeapon()
 {
-	// Simple validation to prevent cheating
-	return (CurrentAmmo > 0);
-}
-
-void APulseFireCharacter::ServerFire_Implementation()
-{
-	// Decrement ammo
-	if (CurrentAmmo > 0)
+	// In a real implementation, we would cycle through available weapons
+	// For now, we'll just spawn a different weapon type if we don't have one
+	if (!CurrentWeapon)
 	{
-		CurrentAmmo--;
-
-		// Perform line trace to determine hit
-		FHitResult HitResult = PerformLineTrace();
-
-		// If we hit something, apply damage
-		if (HitResult.GetActor())
-		{
-			// Apply damage to the hit actor
-			FDamageEvent DamageEvent;
-			HitResult.GetActor()->TakeDamage(20.0f, DamageEvent, GetController(), this);
-		}
-
-		// Play fire effects (sound, animation, etc.)
-		if (FireSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-		}
-
-		if (FireAnimation)
-		{
-			// Get the animation object for the arms mesh
-			UAnimInstance* AnimInstance = FP_Gun->GetAnimInstance();
-			if (AnimInstance)
-			{
-				AnimInstance->Montage_Play(FireAnimation, 1.f);
-			}
-		}
+		SpawnAndEquipWeapon(EWeaponType::Rifle);
+	}
+	else if (CurrentWeapon->GetWeaponType() == EWeaponType::Rifle)
+	{
+		// Switch to shotgun
+		SpawnAndEquipWeapon(EWeaponType::Shotgun);
+	}
+	else
+	{
+		// Switch to rifle
+		SpawnAndEquipWeapon(EWeaponType::Rifle);
 	}
 }
 
-FHitResult APulseFireCharacter::PerformLineTrace() const
+void APulseFireCharacter::PreviousWeapon()
 {
-	// Get the camera transform
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+	// Same as NextWeapon but in reverse order
+	if (!CurrentWeapon)
+	{
+		SpawnAndEquipWeapon(EWeaponType::Shotgun);
+	}
+	else if (CurrentWeapon->GetWeaponType() == EWeaponType::Rifle)
+	{
+		// Switch to shotgun
+		SpawnAndEquipWeapon(EWeaponType::Shotgun);
+	}
+	else
+	{
+		// Switch to rifle
+		SpawnAndEquipWeapon(EWeaponType::Rifle);
+	}
+}
 
-	// Calculate line trace end point
-	const FVector TraceStart = CameraLocation;
-	const FVector TraceEnd = TraceStart + (CameraRotation.Vector() * 10000.0f); // 10 meters
+void APulseFireCharacter::EquipWeapon(ABaseWeapon* NewWeapon)
+{
+	if (NewWeapon)
+	{
+		// If we already have a weapon, destroy it
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->Destroy();
+		}
 
-	// Set up trace parameters
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	QueryParams.bTraceComplex = true;
+		// Set the new weapon
+		CurrentWeapon = NewWeapon;
 
-	// Perform line trace
-	FHitResult HitResult;
-	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+		// Attach the weapon to the character
+		FName AttachSocketName = GetWeaponAttachSocketName();
+		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachSocketName);
 
-	// Draw debug line (only in development builds)
-#if WITH_EDITOR
-	DrawDebugLine(GetWorld(), TraceStart, HitResult.bBlockingHit ? HitResult.ImpactPoint : TraceEnd, FColor::Red, false, 1.0f, 0, 1.0f);
-#endif
+		// Equip the weapon
+		CurrentWeapon->Equip(this);
+	}
+}
 
-	return HitResult;
+ABaseWeapon* APulseFireCharacter::SpawnAndEquipWeapon(EWeaponType WeaponType)
+{
+	// Only spawn weapons on the server
+	if (GetLocalRole() < ROLE_Authority)
+	{
+		return nullptr;
+	}
+
+	// Create the weapon
+	ABaseWeapon* NewWeapon = UWeaponFactory::CreateWeapon(GetWorld(), WeaponType, this);
+
+	// Equip the weapon
+	if (NewWeapon)
+	{
+		EquipWeapon(NewWeapon);
+	}
+
+	return NewWeapon;
+}
+
+FName APulseFireCharacter::GetWeaponAttachSocketName() const
+{
+	return FName("WeaponSocket");
 }
 
 float APulseFireCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -376,4 +382,8 @@ void APulseFireCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 	// Bind reload event
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APulseFireCharacter::Reload);
+
+	// Bind weapon switch events
+	PlayerInputComponent->BindAction("NextWeapon", IE_Pressed, this, &APulseFireCharacter::NextWeapon);
+	PlayerInputComponent->BindAction("PreviousWeapon", IE_Pressed, this, &APulseFireCharacter::PreviousWeapon);
 }

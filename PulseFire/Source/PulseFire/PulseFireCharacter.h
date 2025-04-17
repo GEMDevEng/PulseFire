@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Components/Movement/PulseFireMovementComponent.h"
+#include "Weapons/BaseWeapon.h"
 #include "PulseFireCharacter.generated.h"
 
 class UInputComponent;
@@ -13,7 +14,6 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 class UHealthComponent;
-class AWeapon;
 
 /**
  * The player character for PulseFire.
@@ -74,14 +74,20 @@ protected:
 	/** Called for reload input */
 	void Reload();
 
-	/** Handles firing logic */
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerFire();
-	bool ServerFire_Validate();
-	void ServerFire_Implementation();
+	/** Called for weapon switch input */
+	void NextWeapon();
+	void PreviousWeapon();
 
-	/** Performs a line trace to determine hit */
-	FHitResult PerformLineTrace() const;
+	/** Equip a weapon */
+	UFUNCTION(BlueprintCallable, Category = "Weapons")
+	void EquipWeapon(ABaseWeapon* NewWeapon);
+
+	/** Spawn and equip a weapon of the specified type */
+	UFUNCTION(BlueprintCallable, Category = "Weapons")
+	ABaseWeapon* SpawnAndEquipWeapon(EWeaponType WeaponType);
+
+	/** Get socket name for weapon attachment */
+	FName GetWeaponAttachSocketName() const;
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
@@ -114,7 +120,11 @@ public:
 
 	/** Current weapon */
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = Gameplay)
-	AWeapon* CurrentWeapon;
+	ABaseWeapon* CurrentWeapon;
+
+	/** Default weapon type to spawn */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	EWeaponType DefaultWeaponType;
 
 	/** Whether the player is currently aiming down sights */
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = Gameplay)
