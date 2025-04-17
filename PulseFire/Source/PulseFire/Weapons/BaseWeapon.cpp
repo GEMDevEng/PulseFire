@@ -27,7 +27,7 @@ ABaseWeapon::ABaseWeapon()
     // Create mesh components
     MeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComp"));
     RootComponent = MeshComp;
-    
+
     MeshComp3P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComp3P"));
     MeshComp3P->SetupAttachment(RootComponent);
     MeshComp3P->SetOwnerNoSee(true);
@@ -77,7 +77,7 @@ ABaseWeapon::ABaseWeapon()
 void ABaseWeapon::BeginPlay()
 {
     Super::BeginPlay();
-    
+
     // Calculate time between shots
     TimeBetweenShots = 60.0f / RateOfFire;
 }
@@ -181,11 +181,11 @@ void ABaseWeapon::FinishReload()
 {
     // Calculate how much ammo to add
     int32 AmmoToAdd = FMath::Min(MaxAmmo - CurrentAmmo, CurrentReserveAmmo);
-    
+
     // Update ammo counts
     CurrentAmmo += AmmoToAdd;
     CurrentReserveAmmo -= AmmoToAdd;
-    
+
     // Reset reloading state
     bIsReloading = false;
 }
@@ -289,7 +289,7 @@ void ABaseWeapon::Fire()
         {
             // Calculate direction with random spread
             FVector ShotDirection = EyeRotation.Vector();
-            
+
             // Apply bullet spread
             float CurrentSpreadDegrees = GetCurrentSpread();
             float HalfRad = FMath::DegreesToRadians(CurrentSpreadDegrees);
@@ -311,7 +311,7 @@ void ABaseWeapon::Fire()
             // Hit result
             FHitResult Hit;
             bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, ECC_Visibility, QueryParams);
-            
+
             // Process hit
             if (bHit)
             {
@@ -323,7 +323,7 @@ void ABaseWeapon::Fire()
 
                 // Apply damage
                 float ActualDamage = BaseDamage;
-                
+
                 // Apply headshot multiplier if applicable
                 if (SurfaceType == SURFACE_FLESHVULNERABLE)
                 {
@@ -598,6 +598,15 @@ int32 ABaseWeapon::GetCurrentReserveAmmo() const
 int32 ABaseWeapon::GetMaxReserveAmmo() const
 {
     return MaxReserveAmmo;
+}
+
+void ABaseWeapon::AddAmmo(int32 AmmoAmount)
+{
+    if (GetLocalRole() == ROLE_Authority)
+    {
+        // Add ammo to reserve, capped at max reserve
+        CurrentReserveAmmo = FMath::Min(CurrentReserveAmmo + AmmoAmount, MaxReserveAmmo);
+    }
 }
 
 FString ABaseWeapon::GetWeaponName() const

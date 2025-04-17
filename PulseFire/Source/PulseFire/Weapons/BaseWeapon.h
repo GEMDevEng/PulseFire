@@ -43,8 +43,8 @@ UCLASS(Abstract)
 class PULSEFIRE_API ABaseWeapon : public AActor
 {
     GENERATED_BODY()
-    
-public:    
+
+public:
     // Sets default values for this actor's properties
     ABaseWeapon();
 
@@ -263,7 +263,7 @@ protected:
     /** Play equip effects */
     virtual void PlayEquipEffects();
 
-public:    
+public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
@@ -302,6 +302,10 @@ public:
     /** Get maximum reserve ammo */
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     int32 GetMaxReserveAmmo() const;
+
+    /** Add ammo to reserve */
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void AddAmmo(int32 AmmoAmount);
 
     /** Get weapon name */
     UFUNCTION(BlueprintCallable, Category = "Weapon")
