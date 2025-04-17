@@ -8,6 +8,8 @@
 #include "Weapons/BaseWeapon.h"
 #include "Multiplayer/PulseFireGameMode.h"
 #include "Multiplayer/PulseFirePlayerState.h"
+#include "Audio/FootstepComponent.h"
+#include "VFX/PostProcessManager.h"
 #include "PulseFireCharacter.generated.h"
 
 class UInputComponent;
@@ -120,6 +122,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components)
 	UHealthComponent* HealthComponent;
 
+	/** Footstep component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components)
+	UFootstepComponent* FootstepComponent;
+
+	/** Post process manager */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components)
+	UPostProcessManager* PostProcessManager;
+
 	/** Current weapon */
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = Gameplay)
 	ABaseWeapon* CurrentWeapon;
@@ -156,6 +166,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category=Gameplay)
 	void OnDeath();
 	virtual void OnDeath_Implementation();
+
+	/** Called when health changes */
+	UFUNCTION()
+	void OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }

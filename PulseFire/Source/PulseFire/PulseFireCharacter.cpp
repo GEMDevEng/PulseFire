@@ -13,6 +13,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "Audio/MusicManager.h"
 
 APulseFireCharacter::APulseFireCharacter()
 {
@@ -44,6 +45,13 @@ APulseFireCharacter::APulseFireCharacter()
 
 	// Create health component
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	HealthComponent->OnHealthChanged.AddDynamic(this, &APulseFireCharacter::OnHealthChanged);
+
+	// Create footstep component
+	FootstepComponent = CreateDefaultSubobject<UFootstepComponent>(TEXT("FootstepComponent"));
+
+	// Create post process manager
+	PostProcessManager = CreateDefaultSubobject<UPostProcessManager>(TEXT("PostProcessManager"));
 
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
@@ -350,6 +358,12 @@ void APulseFireCharacter::OnDeath_Implementation()
 		CurrentWeapon = nullptr;
 	}
 
+	// Show death effect
+	if (PostProcessManager)
+	{
+		PostProcessManager->ShowDeathEffect();
+	}
+
 	// In a real implementation, we would play death animation and handle respawn
 	// For now, just log the death
 	UE_LOG(LogTemp, Warning, TEXT("%s has died"), *GetName());
@@ -376,6 +390,33 @@ void APulseFireCharacter::Respawn()
 
 	// Re-enable input
 	EnableInput(Cast<APlayerController>(GetController()));
+}
+
+void APulseFireCharacter::OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	// Show hit feedback if we took damage
+	if (HealthDelta < 0.0f && PostProcessManager)
+	{
+		// Scale intensity based on damage amount
+		float Intensity = FMath::Min(1.0f, FMath::Abs(HealthDelta) / 25.0f);
+		PostProcessManager->ShowHitFeedback(Intensity);
+	}
+
+	// Show low health effect
+	if (PostProcessManager)
+	{
+		PostProcessManager->ShowLowHealthEffect(Health / HealthComp->GetMaxHealth());
+	}
+
+	// Notify music manager of combat
+	if (HealthDelta < 0.0f)
+	{
+		AMusicManager* MusicManager = AMusicManager::GetInstance(this);
+		if (MusicManager)
+		{
+			MusicManager->NotifyCombat();
+		}
+	}
 }
 
 void APulseFireCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

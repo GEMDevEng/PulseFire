@@ -9,6 +9,8 @@
 #include "../PulseFireCharacter.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/CameraComponent.h"
+#include "../Audio/SoundManager.h"
+#include "../VFX/VFXManager.h"
 
 // Console variable for debug
 static int32 DebugWeaponDrawing = 0;
@@ -377,13 +379,13 @@ void ABaseWeapon::PlayFireEffects(const FVector& TraceEnd)
     // Play muzzle effect
     if (MuzzleEffect)
     {
-        UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, MuzzleSocketName);
+        UVFXManager::SpawnMuzzleFlash(MuzzleEffect, MeshComp, MuzzleSocketName);
     }
 
     // Play fire sound
     if (FireSound)
     {
-        UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+        USoundManager::PlaySoundAtLocation(this, FireSound, GetActorLocation());
     }
 
     // Play tracer effect
@@ -452,7 +454,7 @@ void ABaseWeapon::PlayImpactEffects(EPhysicalSurface SurfaceType, const FVector&
         FVector ShotDirection = ImpactPoint - MuzzleLocation;
         ShotDirection.Normalize();
 
-        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedEffect, ImpactPoint, ShotDirection.Rotation());
+        UVFXManager::SpawnImpactEffect(GetWorld(), SelectedEffect, ImpactPoint, ShotDirection);
     }
 }
 
@@ -461,7 +463,7 @@ void ABaseWeapon::PlayReloadEffects()
     // Play reload sound
     if (ReloadSound)
     {
-        UGameplayStatics::PlaySoundAtLocation(this, ReloadSound, GetActorLocation());
+        USoundManager::PlaySoundAtLocation(this, ReloadSound, GetActorLocation());
     }
 
     // Play reload animation
@@ -492,6 +494,12 @@ void ABaseWeapon::PlayReloadEffects()
 
 void ABaseWeapon::PlayEquipEffects()
 {
+    // Play equip sound
+    if (EquipSound)
+    {
+        USoundManager::PlaySoundAtLocation(this, EquipSound, GetActorLocation());
+    }
+
     // Play equip animation
     APulseFireCharacter* Character = GetPulseFireCharacter();
     if (Character)
